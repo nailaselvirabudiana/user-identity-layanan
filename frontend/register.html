@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register User</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <a href="index.html#profile">Profile</a>
+  <a href="index.html#register">Register</a>
+  <a href="#" onclick="logout()">Logout</a>
+</header>
+
+<div class="container">
+  <h2>Register Employee</h2>
+  <form id="regForm">
+    <input id="id" placeholder="User ID" required>
+    <input id="name" placeholder="Name" required>
+    <input id="email" placeholder="Email" required>
+    <select id="role">
+      <option value="employee">Employee</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button>Create</button>
+  </form>
+  <pre id="result"></pre>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/register.js"></script>
+</body>
+</html>

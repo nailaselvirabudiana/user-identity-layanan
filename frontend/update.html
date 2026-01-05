@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update Profile</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <a href="index.html#profile">Profile</a>
+  <a href="index.html#update">Update</a>
+  <a href="#" onclick="logout()">Logout</a>
+</header>
+
+<div class="container">
+  <h2>Update User Profile</h2>
+  <form id="updateForm">
+    <input id="userId" placeholder="User ID" required>
+    <input id="name" placeholder="New Name">
+    <input id="email" placeholder="New Email">
+    <button>Update</button>
+  </form>
+  <pre id="result"></pre>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/update.js"></script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard - User Identity Service</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/admin-dashboard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+<header>
+  <a href="admin-dashboard.html">Dashboard</a>
+  <a href="#" onclick="logout()">Logout</a>
+</header>
+
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>Employee Management</h2>
+    <a href="add-employee.html" class="btn-primary">+ Tambah Karyawan</a>
+  </div>
+  
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="active">Active</button>
+    <button class="tab-btn" data-tab="resigned">Resigned</button>
+  </div>
+  
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <span class="search-icon"></span>
+      <input type="text" id="searchInput" placeholder="Search by name, email, or ID">
+    </div>
+    
+    <select id="statusFilter">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+      <option value="probation">Probation</option>
+      <option value="contract">Contract</option>
+      <option value="intern">Intern</option>
+      <option value="permanent">Permanent</option>
+      <option value="resigned">Resigned</option>
+    </select>
+    
+    <select id="roleFilter">
+      <option value="">All Roles</option>
+      <option value="admin">Admin</option>
+      <option value="employee">Employee</option>
+    </select>
+  </div>
+  
+  <!-- Employee Table -->
+  <div class="table-container">
+    <table class="employee-table">
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Status</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="employeeTableBody">
+        <tr>
+          <td colspan="6" class="loading-cell">
+            <div class="loading">Memuat data karyawan...</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="pagination">
+    <div id="recordInfo">Showing 0 of 0</div>
+    <div class="pagination-controls">
+      <button id="prevPage" onclick="changePage(-1)" disabled>Previous</button>
+      <span id="pageInfo">Page 1 of 1</span>
+      <button id="nextPage" onclick="changePage(1)" disabled>Next</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+requireAuth();
+
+// Redirect non-admin ke halaman lain
+const { claims } = getSession();
+if (claims?.role !== 'admin') {
+  alert('Access denied: Admin only');
+  window.location.href = 'index.html';
+}
+
+let allEmployees = [];
+let currentTab = 'active';
+let currentPage = 1;
+let itemsPerPage = 10;
+
+// Load employees
+async function loadEmployees() {
+  const tbody = document.getElementById('employeeTableBody');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading-cell"><div class="loading">🔄 Memuat data...</div></td></tr>';
+  
+  const users = await api('/users', 'GET');
+  
+  if (!users || users.message || !Array.isArray(users)) {
+    tbody.innerHTML = `<tr><td colspan="6" class="error-cell">${users?.message || 'Gagal memuat data'}</td></tr>`;
+    return;
+  }
+  
+  allEmployees = users;
+  currentPage = 1;
+  filterAndRenderEmployees();
+}
+
+// Filter and render employees
+function filterAndRenderEmployees() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+  const roleFilter = document.getElementById('roleFilter').value;
+  
+  let filtered = allEmployees.filter(emp => {
+    // Tab filter (active vs resigned)
+    const tabMatch = currentTab === 'active' 
+      ? emp.status !== 'resigned' 
+      : emp.status === 'resigned';
+    
+    // Search filter
+    const searchMatch = !searchTerm || 
+      emp.name?.toLowerCase().includes(searchTerm) ||
+      emp.email?.toLowerCase().includes(searchTerm) ||
+      emp.id?.toLowerCase().includes(searchTerm);
+    
+    // Status filter
+    const statusMatch = !statusFilter || emp.status === statusFilter;
+    
+    // Role filter
+    const roleMatch = !roleFilter || emp.role === roleFilter;
+    
+    return tabMatch && searchMatch && statusMatch && roleMatch;
+  });
+  
+  renderEmployeeTable(filtered);
+}
+
+// Render employee table with pagination
+function renderEmployeeTable(employees) {
+  const tbody = document.getElementById('employeeTableBody');
+  const recordInfo = document.getElementById('recordInfo');
+  const pageInfo = document.getElementById('pageInfo');
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  
+  if (employees.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">Tidak ada data karyawan</td></tr>';
+    recordInfo.textContent = 'Showing 0 of 0';
+    pageInfo.textContent = 'Page 0 of 0';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+  
+  // Pagination calculation
+  const totalPages = Math.ceil(employees.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, employees.length);
+  const paginatedEmployees = employees.slice(startIndex, endIndex);
+  
+  // Update pagination info
+  recordInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${employees.length}`;
+  pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
+  
+  tbody.innerHTML = paginatedEmployees.map(emp => {
+    const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
+    const statusBadgeClass = getStatusClass(emp.status);
+    const statusLabel = getStatusLabel(emp.status);
+    
+    return `
+      <tr>
+        <td>
+          <div class="employee-info">
+            <div class="employee-avatar">${initials}</div>
+            <div>
+              <div class="employee-name">${emp.name || 'N/A'}</div>
+              <div class="employee-id">${emp.id || 'N/A'}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="status-badge ${statusBadgeClass}">${statusLabel}</span></td>
+        <td>${emp.email || 'N/A'}</td>
+        <td><span class="role-badge ${emp.role}">${emp.role === 'admin' ? 'Admin' : 'Employee'}</span></td>
+        <td>
+          <div class="action-buttons">
+            <a href="edit-employee.html?id=${emp.id}" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Get status class
+function getStatusClass(status) {
+  const statusMap = {
+    'active': 'status-active',
+    'inactive': 'status-inactive',
+    'resigned': 'status-resigned',
+    'probation': 'status-probation',
+    'contract': 'status-contract',
+    'intern': 'status-intern',
+    'permanent': 'status-permanent'
+  };
+  return statusMap[status] || 'status-default';
+}
+
+// Get status label
+function getStatusLabel(status) {
+  const labelMap = {
+    'active': 'Active',
+    'inactive': 'Inactive',
+    'resigned': 'Resigned',
+    'probation': 'Probation',
+    'contract': 'Contract',
+    'intern': 'Intern',
+    'permanent': 'Permanent'
+  };
+  return labelMap[status] || status;
+}
+
+// Change page
+function changePage(delta) {
+  currentPage += delta;
+  filterAndRenderEmployees();
+}
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = btn.dataset.tab;
+    currentPage = 1;
+    filterAndRenderEmployees();
+  });
+});
+
+// Search and filter listeners
+document.getElementById('searchInput').addEventListener('input', () => {
+  currentPage = 1;
+  filterAndRenderEmployees();
+});
+document.getElementById('statusFilter').addEventListener('change', () => {
+  currentPage = 1;
+  filterAndRenderEmployees();
+});
+document.getElementById('roleFilter').addEventListener('change', () => {
+  currentPage = 1;
+  filterAndRenderEmployees();
+});
+
+// Load data on page load
+loadEmployees();
+</script>
+</body>
+</html> 

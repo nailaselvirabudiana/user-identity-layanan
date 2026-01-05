@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Profile</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <a href="index.html#profile">Profile</a>
+  <a href="index.html#update">Update Profile</a>
+  <a href="index.html#register">Register</a>
+  <a href="#" onclick="logout()">Logout</a>
+</header>
+
+<div class="container">
+  <h2>View User Profile</h2>
+  <form id="getForm">
+    <input id="userId" placeholder="User ID" required>
+    <button>View</button>
+  </form>
+  <pre id="result"></pre>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

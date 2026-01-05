@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Identity Service</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+  <a href="#login" data-nav="login">Login</a>
+  <a href="#profile" data-nav="profile" data-requires-auth>Lihat Profil</a>
+  <a href="#update" data-nav="update" data-requires-auth>Update Profil</a>
+  <a href="#register" data-nav="register" data-requires-auth data-requires-admin>Tambah Daftar Karyawan</a>
+  <a href="#" data-nav="logout" data-requires-auth onclick="logout(); return false;">Logout</a>
+</header>
+
+<div class="container">
+  <section class="view" id="view-login" data-view="login">
+    <h2>User Identity Service</h2>
+    <p class="subtitle">Login untuk mengakses sistem manajemen karyawan</p>
+    
+    <div class="credentials-info">
+      <div class="cred-card admin-card">
+        <div class="cred-header">
+          <strong>Admin HR</strong>
+        </div>
+        <div class="cred-body">
+          <div class="cred-item">
+            <span class="label">Email:</span>
+            <code>admin@mail.com</code>
+          </div>
+          <div class="cred-item">
+            <span class="label">Password:</span>
+            <code>admin123</code>
+          </div>
+          <button type="button" class="quick-login-btn admin-btn" onclick="quickLogin('admin@mail.com', 'admin123')">Login sebagai Admin</button>
+        </div>
+      </div>
+      
+      <div class="cred-card employee-card">
+        <div class="cred-header">
+          <strong>Karyawan</strong>
+        </div>
+        <div class="cred-body">
+          <div class="cred-item">
+            <span class="label">Email:</span>
+            <code>budi@mail.com</code>
+          </div>
+          <div class="cred-item">
+            <span class="label">Password:</span>
+            <code>user123</code>
+          </div>
+          <button type="button" class="quick-login-btn employee-btn" onclick="quickLogin('budi@mail.com', 'user123')">Login sebagai Karyawan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <span>atau login manual</span>
+    </div>
+
+    <form id="loginForm">
+      <input id="loginEmail" type="email" placeholder="Masukkan email" required>
+      <input id="loginPassword" type="password" placeholder="Masukkan password" required>
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
+    <div id="loginResult"></div>
+  </section>
+
+  <section class="view" id="view-profile" data-view="profile">
+    <h2><i class="bi bi-person"></i> Lihat Profil Karyawan</h2>
+    <p class="subtitle" id="profileSubtitle">Masukkan User ID untuk melihat detail profil</p>
+    <form id="getForm">
+      <label for="profileUserId">User ID</label>
+      <input id="profileUserId" placeholder="Contoh: U001, U002, U003..." required>
+      <button type="submit" class="btn-primary"> <i class="bi bi-search"></i> Lihat Profil</button>
+    </form>
+    <div id="profileResult"></div>
+  </section>
+
+  <section class="view" id="view-update" data-view="update">
+    <h2>Update Profil Karyawan</h2>
+    <p class="subtitle" id="updateSubtitle">Perbarui informasi nama dan email karyawan</p>
+    <form id="updateForm">
+      <label for="updateUserId">User ID</label>
+      <input id="updateUserId" placeholder="Contoh: U002" required>
+      <label for="updateName">Nama Baru (opsional)</label>
+      <input id="updateName" placeholder="Masukkan nama baru">
+      <label for="updateEmail">Email Baru (opsional)</label>
+      <input id="updateEmail" type="email" placeholder="Masukkan email baru">
+      <button type="submit" class="btn-primary">💾 Update Profil</button>
+    </form>
+    <div id="updateResult"></div>
+  </section>
+
+  <section class="view" id="view-register" data-view="register">
+    <h2>Tambah Daftar Karyawan Baru</h2>
+    <p class="subtitle">Tambahkan karyawan baru ke sistem (hanya Admin)</p>
+    <form id="regForm">
+      <label for="regId">User ID</label>
+      <input id="regId" placeholder="Contoh: U020" required>
+      <label for="regName">Nama Lengkap</label>
+      <input id="regName" placeholder="Masukkan nama lengkap" required>
+      <label for="regEmail">Email</label>
+      <input id="regEmail" type="email" placeholder="nama@company.com" required>
+      <label for="regRole">Role</label>
+      <select id="regRole">
+        <option value="employee">Employee (Karyawan)</option>
+        <option value="admin">Admin (HR)</option>
+      </select>
+      <button type="submit" class="btn-primary">Daftar Karyawan</button>
+    </form>
+    <div class="info-box">
+      <strong>ℹ Info:</strong> Password default untuk karyawan baru adalah <code>12345</code>
+    </div>
+    <div id="registerResult"></div>
+  </section>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/login.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/update.js"></script>
+<script src="js/register.js"></script>
+</body>
+</html>
