@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    image: noivira124/user-identity-backend:latest
+    container_name: user-identity-backend
+    restart: unless-stopped
+    ports:
+      - "3040:3040"
+    environment:
+      - NODE_ENV=production
+      - PORT=3040
+      - JWT_SECRET=supersecretkeytendee
+    volumes:
+      - ./data/database.sqlite:/app/database.sqlite
+    networks:
+      - app-network
+
+  frontend:
+    image: noivira124/user-identity-frontend:latest
+    container_name: user-identity-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
