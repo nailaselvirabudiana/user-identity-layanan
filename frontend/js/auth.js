@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:3040";
+const API_BASE = "https://api.queenifyofficial.site/api";
 
 function parseJwt(token) {
   if (!token) return null;

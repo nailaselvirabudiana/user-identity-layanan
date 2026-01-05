@@ -5,7 +5,9 @@ const routes = require("./routes/users");
 const app = express();
 const PORT = process.env.PORT || 3040;
 
-app.use(cors()); // agar frontend bisa call API
+app.use(cors({
+    origin: ['https://app.queenifyofficial.site']
+}));
 app.use(express.json());
 
 // info (root)
